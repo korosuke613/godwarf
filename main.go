@@ -24,7 +24,6 @@ func makeLogger() *zap.SugaredLogger {
 }
 
 func main() {
-	filePath := "./example.yaml"
 	app := &cli.App{
 		Name: "greet",
 		Flags: []cli.Flag{
@@ -32,6 +31,7 @@ func main() {
 		},
 		Action: func(con *cli.Context) error {
 			logger := makeLogger()
+			filePath := con.Args().Get(0)
 			configs, err := readConfig(filePath, logger)
 			if err != nil {
 				panic(err)

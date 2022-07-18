@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "script": {
+      "properties": {
+        "workingDirectory": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "string"
+        }
+      },
+      "required": ["commands"]
+    }
+  },
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "schedule": {
+        "type": "string",
+        "description": "See the [crontab man page](https://pubs.opengroup.org/onlinepubs/7908799/xcu/crontab.html)",
+        "default": "*/60 * * * *"
+      },
+      "scripts": {
+        "type": "object",
+        "properties": {
+          "before": {
+            "$ref": "#/definitions/script"
+          },
+          "after": {
+            "$ref": "#/definitions/script"
+          }
+        }
+      }
+    },
+    "required": [
+      "path"
+    ]
+  }
+}
