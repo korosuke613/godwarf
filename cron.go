@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"github.com/robfig/cron/v3"
+	"go.uber.org/zap"
 )
 
-func makeCron(configs *map[string]Config) (*cron.Cron, error) {
+func makeCron(configs *Configs, logger *zap.SugaredLogger) (*cron.Cron, error) {
+	l := logger.With("action", "cron")
 	c := cron.New()
 
 	for name, config := range *configs {
@@ -16,10 +17,55 @@ func makeCron(configs *map[string]Config) (*cron.Cron, error) {
 			schedule = "*/5 * * * *"
 		}
 
-		_, err := c.AddFunc(schedule, func() {
-			fmt.Printf("Pull %s", name)
-			pull(&config)
-		})
+		l.Infow("Add func",
+			"name", name,
+			"schedule", schedule,
+		)
+
+		cronFunc := func() {
+			l.Infow("Start func",
+				"name", name,
+				"schedule", schedule,
+			)
+
+			gc, err := makeGitClient(&config, logger)
+			if err != nil {
+				l.Errorw("Failed init git client",
+					"name", name,
+					"schedule", schedule,
+					"reason", err.Error(),
+				)
+			}
+
+			err = gc.pull(&config)
+			if err != nil {
+				l.Errorw("Failed pull",
+					"name", name,
+					"schedule", schedule,
+					"reason", err.Error(),
+				)
+			}
+
+			sc, err := makeScriptClient(&config, logger)
+			if err != nil {
+				l.Errorw("Failed init script client",
+					"name", name,
+					"schedule", schedule,
+					"reason", err.Error(),
+				)
+			}
+
+			sc.beforeExec()
+			sc.afterExec()
+
+			l.Infow("Finish func",
+				"name", name,
+				"schedule", schedule,
+			)
+		}
+
+		cronFunc()
+		_, err := c.AddFunc(schedule, cronFunc)
 		if err != nil {
 			return nil, err
 		}

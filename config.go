@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/go-git/go-git/v5"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
+	"io/ioutil"
 )
 
 type Slack struct {
@@ -14,26 +16,50 @@ type Notify struct {
 }
 
 type Script struct {
-	Before string
-	After  string
+	WorkingDirectory string `yaml:"workingDirectory"`
+	Commands         string
+}
+
+type Scripts struct {
+	Before *Script
+	After  *Script
 }
 
 type Config struct {
 	Path        string
 	Schedule    string
-	Script      Script
+	Scripts     Scripts
 	Notify      Notify
 	DisablePull bool            `yaml:"disablePull"`
 	PullOptions git.PullOptions `yaml:"pullOptions"`
 }
 
-func ReadConfig(configToml []byte) (*map[string]Config, error) {
-	config := make(map[string]Config)
+type Configs map[string]Config
 
-	err := yaml.Unmarshal(configToml, &config)
+func readConfig(filePath string, logger *zap.SugaredLogger) (*Configs, error) {
+	l := logger.With(
+		"action", "read configs",
+		"file", filePath,
+	)
+
+	l.Info("Start")
+	bytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	configs, err := parseConfigs(bytes)
+	l.Info("Finish")
+
+	return configs, err
+}
+
+func parseConfigs(configToml []byte) (*Configs, error) {
+	configs := make(map[string]Config)
+
+	err := yaml.Unmarshal(configToml, &configs)
 	if err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return (*Configs)(&configs), nil
 }

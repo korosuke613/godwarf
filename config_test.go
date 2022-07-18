@@ -12,7 +12,7 @@ func TestReadConfig(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *map[string]Config
+		want    *Configs
 		wantErr bool
 	}{
 		{
@@ -31,7 +31,7 @@ renovate:
       apiKey: "api"
 `),
 			},
-			want: &map[string]Config{
+			want: &Configs{
 				"renovate": {
 					Path: "/tmp/hoge",
 					Script: Script{
@@ -52,13 +52,13 @@ docker compose up
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ReadConfig(tt.args.configYaml)
+			got, err := parseConfigs(tt.args.configYaml)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadConfig() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("parseConfigs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadConfig() got = %v, want %v", got, tt.want)
+				t.Errorf("parseConfigs() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
