@@ -32,7 +32,7 @@ docker:
 demo:
     FROM +docker
     WORKDIR /work
-    RUN git clone https://github.com/korosuke613/playground
+    GIT CLONE https://github.com/korosuke613/playground ./playground
     COPY demo.yaml .
     ENTRYPOINT ["/godwarf", "./demo.yaml"]
     SAVE IMAGE korosuke613/godwarf:demo
