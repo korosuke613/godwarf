@@ -9,4 +9,5 @@ playground:
         ls
         go mod tidy
         go build main.go
+        sleep 10
         ./main
