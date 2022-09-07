@@ -1,0 +1,18 @@
+godwarf:
+  path: ./
+  schedule: "* * * * *"
+  scripts:
+    after:
+      commands: |
+        echo "Hello world"
+        ls ./
+
+playground:
+  path: /Users/korosuke613/ghq/github.com/korosuke613/playground
+  schedule: "*/2 * * * *"
+  scripts:
+    after:
+      workingDirectory: go/helloworld
+      commands: |
+        go build main.go
+        ./main

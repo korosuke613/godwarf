@@ -1,0 +1,13 @@
+playground:
+  path: ./playground
+  schedule: "*/2 * * * *"
+  scripts:
+    after:
+      workingDirectory: go/helloworld
+      commands: |
+        pwd
+        ls
+        go mod tidy
+        go build main.go
+        sleep 10
+        ./main
